@@ -1,35 +1,20 @@
 export class LoginPage {
 
-    // Initialize login controls and validation-message locators.
+    // This page object represents the OrangeHRM login screen and centralizes all auth-related selectors.
     constructor(page) {
-
-        // Keep a reference to the browser page for this page object.
         this.page = page
 
-        // Locate the username input by its accessible role and label.
+        // Login form selectors used for the sign-in flow.
         this.usernameInput = page.getByRole('textbox', { name: 'Username' })
-
-        // Locate the password input by its accessible role and label.
         this.passwordInput = page.getByRole('textbox', { name: 'Password' })
-
-        // Locate the button that submits the login form.
         this.loginButton = page.getByRole('button', { name: ' Login ' })
-
-        // Locate the exact error message shown for invalid credentials.
         this.invalidCredentialsError = page.getByText('Invalid credentials', { exact: true })
     }
 
-
-    // Accept credentials as arguments so tests can reuse the same login workflow.
+    // Fill the username and password and submit the form to authenticate the user.
     async login(username, password) {
-
-        // Enter the supplied username into the login form.
         await this.usernameInput.fill(username)
-
-        // Enter the supplied password into the login form.
         await this.passwordInput.fill(password)
-
-        // Submit the login form after both fields have been populated.
         await this.loginButton.click()
     }
 }

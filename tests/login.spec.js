@@ -2,27 +2,23 @@ import { test, expect } from '@playwright/test'
 import { LoginPage } from '../pages/LoginPage'
 import { DashboardPage } from '../pages/DashboardPage'
 
-
+// This scenario verifies the happy path for a valid user: sign in, confirm dashboard access, and log out successfully.
 test('TC01 - Verify valid user can login, access Dashboard and logout', async ({ page }) => {
 
-    // Create the login page object for authentication actions.
+    // Arrange: create the page objects used to interact with the auth and dashboard flows.
     const loginPage = new LoginPage(page)
-
-    // Create the dashboard page object for dashboard validation and logout.
     const dashboardPage = new DashboardPage(page)
 
-    // Open the application login route defined by the Playwright base URL.
+    // Act: open the application and log in with known valid credentials.
     await page.goto('/')
-
-    // Authenticate with the known valid OrangeHRM demo credentials.
     await loginPage.login('Admin', 'admin123')
 
-    // Confirm that successful authentication exposes the dashboard heading.
-    expect(await dashboardPage.dashboardHeading).toBeVisible()
+    // Assert: validate that the dashboard is visible after successful authentication.
+    await expect(dashboardPage.dashboardHeading).toBeVisible()
 
-    // Open the user menu and end the authenticated session.
+    // Act: sign out through the user menu.
     await dashboardPage.logout()
 
-    // Confirm that the login button is visible again after logout.
+    // Assert: confirm the login form is available again after logout.
     await expect(loginPage.loginButton).toBeVisible()
 })

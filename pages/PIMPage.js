@@ -84,7 +84,7 @@ export class PIMPage {
     // Open the add employee form and wait for the first input field to be ready.
     async navigateToAddEmployee() {
         await this.addEmployeeButton.click()
-        await this.firstName.waitFor({ state: 'visible' })
+        await expect(this.firstName).toBeVisible()
     }
 
     // Fill the employee personal information and submit the form to create the record.

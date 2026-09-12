@@ -17,7 +17,7 @@ test('TC03 - Verify user can create, update and delete an employee', async ({ pa
     // Use dynamic values so the test does not collide with existing employee records in the system.
     const firstName = 'Reddy'
     const middleName = 'QA'
-    const lastName = `Tester${Date.now()}`
+    const lastName = `T${Date.now().toString().slice(-8)}`
 
     const employeeDetailsName = `${firstName} ${lastName}`
 
@@ -60,8 +60,8 @@ test('TC03 - Verify user can create, update and delete an employee', async ({ pa
 
 
     // Validating the updated information of an employee on the employee details page after editing
-    const updatedFirstName = `${firstName}2105`
-    const updatedLastName = `${lastName}0200`
+    const updatedFirstName = `${firstName}21`
+    const updatedLastName = `${lastName}05`
 
     // Act: update first and last name.
     await pimPage.updateEmployeeDetails({

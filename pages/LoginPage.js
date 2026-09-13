@@ -1,3 +1,5 @@
+import { expect } from "@playwright/test"
+
 export class LoginPage {
 
     // This page object represents the OrangeHRM login screen and centralizes all auth-related selectors.
@@ -13,6 +15,9 @@ export class LoginPage {
 
     // Fill the username and password and submit the form to authenticate the user.
     async login(username, password) {
+
+        await expect(this.usernameInput).toBeVisible()
+
         await this.usernameInput.fill(username)
         await this.passwordInput.fill(password)
         await this.loginButton.click()

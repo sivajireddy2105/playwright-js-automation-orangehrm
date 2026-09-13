@@ -9,7 +9,7 @@ export class PIMPage {
         // PIM module navigation and page-state locators.
         this.pimMenu = page.getByRole('link', { name: 'PIM', exact: true })
         this.pimHeading = page.locator('span.oxd-topbar-header-breadcrumb')
-        
+
         this.employeeListLink = page.getByRole('link', { name: 'Employee List', exact: true })
 
         // Employee list and search locators used to locate records after creation.
@@ -101,8 +101,10 @@ export class PIMPage {
 
         await this.saveButton.click()
 
-        // Confirm that Save completed and OrangeHRM opened the employee details page.
-        await expect(this.page).toHaveURL(/\/pim\/viewPersonalDetails\/empNumber\//)
+        // Confirm that Save completed
+        await expect(
+            this.page.getByText('Successfully Saved', { exact: true })
+        ).toBeVisible()
 
         // Confirm the employee details form is available.
         await expect(this.firstName).toHaveValue(firstName)
@@ -120,33 +122,27 @@ export class PIMPage {
 
     // Update any combination of employee name fields provided by the test.
     async updateEmployeeDetails({ firstName, middleName, lastName } = {}) {
-
         if (firstName != undefined) {
             await this.firstName.fill(firstName)
+            await expect(this.firstName).toHaveValue(firstName)
         }
 
         if (middleName != undefined) {
             await this.middleName.fill(middleName)
+            await expect(this.middleName).toHaveValue(middleName)
         }
 
         if (lastName != undefined) {
             await this.lastName.fill(lastName)
+            await expect(this.lastName).toHaveValue(lastName)
         }
     }
 
 
     // Save the updated employee information in employee details page
-    async saveEmployeeDetails({ firstName, lastName } = {}) {
+    async saveEmployeeDetails() {
 
         await this.saveButton.first().click()
-
-        if (firstName !== undefined) {
-            await expect(this.firstName).toHaveValue(firstName)
-        }
-
-        if (lastName !== undefined) {
-            await expect(this.lastName).toHaveValue(lastName)
-        }
     }
 
     // Return to the employee list page so the newly created person can be searched and validated.

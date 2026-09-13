@@ -70,17 +70,9 @@ test('TC03 - Verify user can create, update and delete an employee', async ({ pa
         lastName: updatedLastName
     })
 
-    // Assert: verify the updated values before saving.
-    await expect(pimPage.firstName).toHaveValue(updatedFirstName)
-    await expect(pimPage.middleName).toHaveValue(middleName)
-    await expect(pimPage.lastName).toHaveValue(updatedLastName)
-
 
     // Update the employee informatio and save the changes on the employee details page
-    await pimPage.saveEmployeeDetails({
-        firstName: updatedFirstName,
-        lastName: updatedLastName
-    })
+    await pimPage.saveEmployeeDetails()
 
     // Act: return to the employee listing page after updating the employee information
     await pimPage.navigateToEmployeeList()

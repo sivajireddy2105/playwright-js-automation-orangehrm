@@ -55,7 +55,9 @@ export class PIMPage {
         await row.locator(this.editIcon).click()
 
         // Wait for the employee details page to load
-        await this.employeeFullName.waitFor({ state: 'visible' })
+        await expect(this.employeeFullName).toBeVisible({ timeout: 20000 })
+        await expect(this.firstName).toBeVisible({ timeout: 20000 })
+        await expect(this.lastName).toBeVisible({ timeout: 20000 })
     }
 
 
@@ -70,7 +72,9 @@ export class PIMPage {
 
 
     // Search for an employee by ID and verify that no matching record exists.
-    async verifyEmployeDeleted(employeeId) {
+    async verifyEmployeeDeleted(employeeId) {
+        await expect(this.searchEmployeeId).toBeVisible({ timeout: 20000 })
+
         await this.searchEmployeeId.fill(employeeId)
 
         await expect(this.searchEmployeeId).toHaveValue(employeeId)
@@ -92,9 +96,15 @@ export class PIMPage {
         await this.firstName.fill(firstName)
         await this.middleName.fill(middleName)
         await this.lastName.fill(lastName)
+
         await this.saveButton.click()
 
-        await this.employeeFullName.waitFor({ state: 'visible' })
+        // Confirm that Save completed and OrangeHRM opened the employee details page.
+        await expect(this.page).toHaveURL(/\/pim\/viewPersonalDetails\/empNumber\//)
+
+        // Confirm the employee details form is available.
+        await expect(this.firstName).toHaveValue(firstName)
+        await expect(this.lastName).toHaveValue(lastName)
     }
 
     // Retrieve the employee ID assigned by the system after saving the form.
@@ -124,21 +134,33 @@ export class PIMPage {
 
 
     // Save the updated employee information in employee details page
-    async saveEmployeeDetails() {
+    async saveEmployeeDetails({ firstName, lastName } = {}) {
 
         await this.saveButton.first().click()
 
-        await this.employeeFullName.waitFor({ state: 'visible' })
+        if (firstName !== undefined) {
+            await expect(this.firstName).toHaveValue(firstName)
+        }
+
+        if (lastName !== undefined) {
+            await expect(this.lastName).toHaveValue(lastName)
+        }
     }
 
     // Return to the employee list page so the newly created person can be searched and validated.
     async navigateToEmployeeList() {
         await this.pimMenu.click()
-        await this.pimHeading.waitFor()
+
+        await expect(this.page).toHaveURL(/\/pim\/viewEmployeeList/)
+
+        // Wait for the PIM page and its employee-search controls
+        // to actually become available.
+        await expect(this.searchEmployeeId).toBeVisible()
     }
 
     // Search with the Employee Id after the employee information changes
     async searchEmployeeById(employeeId) {
+        await expect(this.searchEmployeeId).toBeVisible()
 
         await this.searchEmployeeId.fill(employeeId)
         await expect(this.searchEmployeeId).toHaveValue(employeeId)
@@ -146,24 +168,17 @@ export class PIMPage {
         await this.searchButton.click()
 
         await expect(this.employeeRows).toHaveCount(1)
+        await expect(this.employeeRows.first()).toBeVisible()
+
     }
 
     // Match the visible employee row against the expected employee ID after employee info changes
     async findEmployeeById(employeeId) {
 
-        await this.employeeRows.first().waitFor({ state: 'visible' })
+        const row = this.employeeRows.first()
 
-        const rows = this.employeeRows
+        await expect(row.locator('.oxd-table-cell').nth(1)).toHaveText(employeeId)
 
-        for (let i = 0; i < await rows.count(); i++) {
-
-            const row = rows.nth(i)
-            const employeeIdCell = row.locator('.oxd-table-cell').nth(1)
-
-            if ((await employeeIdCell.innerText()).trim() === employeeId) {
-                return row
-            }
-        }
-        return null
+        return row
     }
 }

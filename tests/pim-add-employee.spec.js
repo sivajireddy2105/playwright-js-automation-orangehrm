@@ -19,7 +19,6 @@ test('TC03 - Verify user can create, update and delete an employee', async ({ pa
     const middleName = 'QA'
     const lastName = `T${Date.now().toString().slice(-3)}`
 
-    const employeeDetailsName = `${firstName} ${lastName}`
 
     // Act: open the application and sign in with admin credentials.
     await page.goto('/')
@@ -63,7 +62,7 @@ test('TC03 - Verify user can create, update and delete an employee', async ({ pa
 
     // Validating the updated information of an employee on the employee details page after editing
     const updatedFirstName = `${firstName}21`
-    const updatedLastName = `${lastName}05`
+    const updatedLastName = `U${Date.now().toString().slice(-3)}`
 
     // Act: update first and last name.
     await pimPage.updateEmployeeDetails({

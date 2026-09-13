@@ -9,6 +9,8 @@ export class PIMPage {
         // PIM module navigation and page-state locators.
         this.pimMenu = page.getByRole('link', { name: 'PIM', exact: true })
         this.pimHeading = page.locator('span.oxd-topbar-header-breadcrumb')
+        
+        this.employeeListLink = page.getByRole('link', { name: 'Employee List', exact: true })
 
         // Employee list and search locators used to locate records after creation.
         this.searchEmployeeId = page
@@ -149,7 +151,7 @@ export class PIMPage {
 
     // Return to the employee list page so the newly created person can be searched and validated.
     async navigateToEmployeeList() {
-        await this.pimMenu.click()
+        await this.employeeListLink.click()
 
         await expect(this.page).toHaveURL(/\/pim\/viewEmployeeList/)
 

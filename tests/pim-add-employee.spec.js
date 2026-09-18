@@ -21,7 +21,7 @@ test('TC03 - Verify user can create, update and delete an employee', async ({ pa
 
 
     // Act: open the application and sign in with admin credentials.
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 })
     await loginPage.login('Admin', 'admin123')
 
     // Assert: confirm the user has reached the dashboard after login.

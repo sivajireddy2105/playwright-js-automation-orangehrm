@@ -8,7 +8,7 @@ test('TC02 - Verify that the application rejects invalid authentication credenti
     const loginPage = new LoginPage(page)
 
     // Act: open the login page and submit invalid credentials.
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 })
     await loginPage.login('Admin', 'Admin1234')
 
     // Assert: wait for and confirm the invalid-credentials message appears.

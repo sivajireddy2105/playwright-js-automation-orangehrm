@@ -10,7 +10,7 @@ test('TC01 - Verify valid user can login, access Dashboard and logout', async ({
     const dashboardPage = new DashboardPage(page)
 
     // Act: open the application and log in with known valid credentials.
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 })
     await loginPage.login('Admin', 'admin123')
 
     // Assert: validate that the dashboard is visible after successful authentication.

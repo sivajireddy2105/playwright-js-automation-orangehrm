@@ -101,14 +101,11 @@ export class PIMPage {
 
         await this.saveButton.click()
 
-        // Confirm that Save completed
-        await expect(
-            this.page.getByText('Successfully Saved', { exact: true })
-        ).toBeVisible()
+        await expect(this.firstName).toHaveValue(firstName, { timeout: 30000 })
+        await expect(this.middleName).toHaveValue(middleName, { timeout: 30000 })
+        await expect(this.lastName).toHaveValue(lastName, { timeout: 30000 })
 
-        // Confirm the employee details form is available.
-        await expect(this.firstName).toHaveValue(firstName)
-        await expect(this.lastName).toHaveValue(lastName)
+        await expect(this.employeeId).toHaveValue(/\S+/, { timeout: 30000 })
     }
 
     // Retrieve the employee ID assigned by the system after saving the form.

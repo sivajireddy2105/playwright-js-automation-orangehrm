@@ -113,7 +113,6 @@ export class PIMPage {
 
     // Retrieve the employee ID assigned by the system after saving the form.
     async getEmployeeId() {
-        // await this.employeeId.waitFor({ state: 'visible' })
 
         await expect(this.employeeId).toHaveValue(/\S+/)
         return await this.employeeId.inputValue()

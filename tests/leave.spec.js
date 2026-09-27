@@ -9,8 +9,8 @@ test('TC04 - Explore Leave module', async ({ page }) => {
     const leavePage = new LeavePage(page)
 
     // Leave dates use OrangeHRM's yyyy-dd-mm format
-    const fromDate = '2026-25-11'
-    const toDate = '2026-26-11'
+    const fromDate = '2026-07-12'
+    const toDate = '2026-08-12'
     const leaveTypeOption = 'CAN - Bereavement'
 
     // Open the application

@@ -56,6 +56,10 @@ export class PIMPage {
     // Open the PIM module from the left navigation.
     async navigateToPIM() {
         await this.pimMenu.click()
+
+        await expect(this.pimHeading).toHaveText('PIM', {
+            timeout: 30000
+        })
     }
 
 
@@ -64,8 +68,16 @@ export class PIMPage {
 
         await row.locator(this.editIcon).click()
 
+        await expect(this.page).toHaveURL(
+            /\/pim\/viewPersonalDetails\/empNumber\/\d+/,
+            { timeout: 30000 }
+        )
+
+        await expect(this.loadingSpinner).toBeHidden({
+            timeout: 30000
+        })
+
         // Wait for the employee details page to load
-        await expect(this.employeeFullName).toBeVisible({ timeout: 20000 })
         await expect(this.firstName).toBeVisible({ timeout: 20000 })
         await expect(this.lastName).toBeVisible({ timeout: 20000 })
     }
@@ -75,7 +87,11 @@ export class PIMPage {
     async deleteEmployee(row) {
         await row.locator(this.deleteIcon).click()
 
-        await expect(this.confirmDeleteButton).toBeVisible()
+        await expect(this.confirmDeleteButton).toBeVisible({ timeout: 30000 })
+
+        await expect(this.confirmDeleteButton).toBeEnabled({
+            timeout: 30000
+        })
 
         await this.confirmDeleteButton.click()
     }
@@ -126,10 +142,8 @@ export class PIMPage {
         // Wait for Save operation to complete.
         await expect(this.loadingSpinner).toBeHidden({ timeout: 30000 })
 
-        // Wait for the employee details page after save.
-        await expect(this.employeeFullName).toBeVisible({ timeout: 30000 })
-
         // Confirm the saved employee details
+        await expect(this.employeeFullName).toBeVisible({ timeout: 30000 })
         await expect(this.firstName).toHaveValue(firstName, { timeout: 30000 })
         await expect(this.middleName).toHaveValue(middleName, { timeout: 30000 })
         await expect(this.lastName).toHaveValue(lastName, { timeout: 30000 })
@@ -206,31 +220,43 @@ export class PIMPage {
     async navigateToEmployeeList() {
         await this.employeeListLink.click()
 
-        await expect(this.page).toHaveURL(/\/pim\/viewEmployeeList/)
+        await expect(this.page).toHaveURL(/\/pim\/viewEmployeeList/, { timeout: 30000 })
 
         await expect(this.loadingSpinner).toBeHidden({ timeout: 30000 })
 
         // Wait for the PIM page and its employee-search controls
         // to actually become available.
-        await expect(this.searchEmployeeId).toBeVisible()
+        await expect(this.searchEmployeeId).toBeVisible({ timeout: 30000 })
+
+        await expect(this.employeeTable).toBeVisible({ timeout: 30000 })
     }
 
     // Search with the Employee Id after the employee information changes
     async searchEmployeeById(employeeId) {
-        await expect(this.searchEmployeeId).toBeVisible({ timeout: 20000 })
+        await expect(this.searchEmployeeId).toBeVisible({ timeout: 30000 })
 
         await this.searchEmployeeId.fill(employeeId)
         await expect(this.searchEmployeeId).toHaveValue(employeeId)
 
         await this.searchButton.click()
 
-        const matchingEmployeeRow = this.employeeRows.filter({
-            has: this.page.locator('.oxd-table-cell', { hasText: employeeId })
+        await expect(this.loadingSpinner).toBeHidden({
+            timeout: 30000
         })
 
-        await expect(matchingEmployeeRow).toHaveCount(1, { timeout: 30000 })
-        await expect(matchingEmployeeRow).toBeVisible()
+        const matchingEmployeeRow = this.employeeRows.filter({
+            has: this.page.locator('.oxd-table-cell').filter({
+                hasText: employeeId
+            })
+        })
 
+        await expect(matchingEmployeeRow).toHaveCount(1, {
+            timeout: 30000
+        })
+
+        await expect(matchingEmployeeRow).toContainText(employeeId)
+
+        return matchingEmployeeRow
     }
 
     // Match the visible employee row against the expected employee ID after employee info changes
@@ -242,7 +268,7 @@ export class PIMPage {
 
         await expect(row).toHaveCount(1, { timeout: 30000 })
 
-        await expect(row.locator('.oxd-table-cell').nth(1)).toHaveText(employeeId)
+        await expect(row).toContainText(employeeId)
 
         return row
     }

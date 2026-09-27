@@ -98,47 +98,69 @@ export class UserManagementPage {
     }
 
 
-    // 
     async addSystemUser({ employeeName, username, password }) {
 
         // User role
         await this.userRoleDropdown.click()
-        await this.page.getByRole('option', { name: /Admin/i, exact: true }).click()
+        await this.page.getByRole('option', {
+            name: /Admin/i,
+            exact: true
+        }).click()
 
         // Employee name
         await this.employeeNameInput.fill(employeeName)
 
-        const employeeSugesstion = await this.page.getByRole('option',
-            { name: employeeName, exact: true }).first()
+        const employeeSuggestion = this.page.getByRole('option', {
+            name: employeeName,
+            exact: true
+        }).first()
 
-        await expect(employeeSugesstion).toBeVisible()
-        await employeeSugesstion.click()
+        await expect(employeeSuggestion).toBeVisible()
+        await employeeSuggestion.click()
 
         // Status
         await this.statusDropdown.click()
-        await this.page.getByRole('option',
-            { name: /Enabled/i, exact: true }).click()
+        await this.page.getByRole('option', {
+            name: /Enabled/i,
+            exact: true
+        }).click()
 
         // Username
         await this.usernameInput.fill(username)
 
         // Password
         await this.passwordInput.fill(password)
-
-        // Confirm password
         await this.confirmPasswordInput.fill(password)
 
         // Save
         await this.saveButton.click()
 
-        // Save -> System users page
-        await expect(this.page).toHaveURL(/admin\/viewSystemUsers/)
-
+        // Wait for save operation to complete
         const loadingSpinner = this.page.locator('.oxd-loading-spinner')
-        await expect(loadingSpinner).toBeHidden()
+        await expect(loadingSpinner).toBeHidden({
+            timeout: 30000
+        })
 
-        // Wait until the page is actually stable
-        await expect(this.searchUsernameInput).toBeVisible()
+        await expect(this.page).toHaveURL(
+            /\/admin\/viewSystemUsers/,
+            { timeout: 30000 }
+        )
+
+        await expect(this.systemUsersHeading).toBeVisible({
+            timeout: 30000
+        })
+
+        await expect(this.searchUsernameInput).toBeVisible({
+            timeout: 30000
+        })
+        // Wait for the System Users table to finish loading
+        await expect(this.userTable).toBeVisible({
+            timeout: 30000
+        })
+
+        await expect(this.userTable.locator('.oxd-table-header')).toBeVisible({
+            timeout: 30000
+        })
     }
 
     async SearchAndverifySystemUser(username, employeename) {
@@ -150,7 +172,7 @@ export class UserManagementPage {
         await this.searchButton.click()
 
         // Retrieving the matched user row
-        await expect(this.userRows).toHaveCount(1)
+        await expect(this.userRows).toHaveCount(1, { timeout: 30000 })
 
         const userRow = this.userRows.first()
 

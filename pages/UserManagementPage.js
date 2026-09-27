@@ -109,7 +109,7 @@ export class UserManagementPage {
         await this.employeeNameInput.fill(employeeName)
 
         const employeeSugesstion = await this.page.getByRole('option',
-            { name: employeeName, exact: true })
+            { name: employeeName, exact: true }).first()
 
         await expect(employeeSugesstion).toBeVisible()
         await employeeSugesstion.click()

@@ -149,16 +149,28 @@ export class PIMPage {
     // Update any combination of employee name fields provided by the test.
     async updateEmployeeDetails({ firstName, middleName, lastName } = {}) {
         if (firstName != undefined) {
+            await this.firstName.click()
+            await this.firstName.press('Control+A')
+            await this.firstName.press('Backspace')
+            await expect(this.firstName).toHaveValue('')
             await this.firstName.fill(firstName)
             await expect(this.firstName).toHaveValue(firstName)
         }
 
         if (middleName != undefined) {
+            await this.middleName.click()
+            await this.middleName.press('Control+A')
+            await this.middleName.press('Backspace')
+            await expect(this.middleName).toHaveValue('')
             await this.middleName.fill(middleName)
             await expect(this.middleName).toHaveValue(middleName)
         }
 
         if (lastName != undefined) {
+            await this.lastName.click()
+            await this.lastName.press('Control+A')
+            await this.lastName.press('Backspace')
+            await expect(this.lastName).toHaveValue('')
             await this.lastName.fill(lastName)
             await expect(this.lastName).toHaveValue(lastName)
         }
@@ -167,8 +179,27 @@ export class PIMPage {
 
     // Save the updated employee information in employee details page
     async saveEmployeeDetails() {
+        const updatedFirstName = await this.firstName.inputValue()
+        const updatedMiddleName = await this.middleName.inputValue()
+        const updatedLastName = await this.lastName.inputValue()
 
         await this.saveButton.first().click()
+
+        await expect(this.loadingSpinner).toBeHidden({
+            timeout: 30000
+        })
+
+        await expect(this.firstName).toHaveValue(updatedFirstName, {
+            timeout: 30000
+        })
+
+        await expect(this.middleName).toHaveValue(updatedMiddleName, {
+            timeout: 30000
+        })
+
+        await expect(this.lastName).toHaveValue(updatedLastName, {
+            timeout: 30000
+        })
     }
 
     // Return to the employee list page so the newly created person can be searched and validated.
@@ -176,6 +207,8 @@ export class PIMPage {
         await this.employeeListLink.click()
 
         await expect(this.page).toHaveURL(/\/pim\/viewEmployeeList/)
+
+        await expect(this.loadingSpinner).toBeHidden({ timeout: 30000 })
 
         // Wait for the PIM page and its employee-search controls
         // to actually become available.

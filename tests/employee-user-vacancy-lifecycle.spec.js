@@ -7,8 +7,6 @@ import { PIMPage } from '../pages/PIMPage'
 import { RecruitmentPage } from '../pages/RecruitmentPage'
 import { CandidatePage } from '../pages/CandidatePage'
 
-const path = require('node:path')
-
 
 test('TC05 - Verify employee can be associated with a system user, vacancy, and candidate', async ({ page }) => {
 
@@ -51,7 +49,11 @@ test('TC05 - Verify employee can be associated with a system user, vacancy, and 
 
     const candidateEmail = `milo.qe.${Date.now().toString().slice(-4)}@gmail.com`
 
-    const resumePath = path.resolve(process.cwd(), 'fixtures/testResumeFile.txt')
+    const resumeUpload = {
+        name: 'testResumeFile.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.from('Test resume content for Playwright automation.')
+    }
 
 
     // =========================
@@ -160,7 +162,7 @@ test('TC05 - Verify employee can be associated with a system user, vacancy, and 
         lastName: candidateLastName,
         vacancy: vacancyName,
         email: candidateEmail,
-        resumeUpload: resumePath
+        resumeUpload
     })
 
 

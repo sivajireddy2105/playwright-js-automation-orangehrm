@@ -27,6 +27,13 @@ export class PIMPage {
         this.middleName = page.getByPlaceholder('Middle Name')
         this.lastName = page.getByPlaceholder('Last Name')
         this.saveButton = page.getByRole('button', { name: ' Save ', exact: true })
+        this.loadingSpinner = page.locator('.oxd-loading-spinner')
+
+        // Employee id collides with the existing id
+        this.employeeIdError = this.page
+            .locator('.oxd-input-group')
+            .filter({ hasText: 'Employee Id' })
+            .getByText('Employee Id already exists')
 
         // Employee detail page locators used to confirm the record was saved correctly.
         this.employeeFullName = page.locator('div.orangehrm-edit-employee-name')
@@ -34,6 +41,7 @@ export class PIMPage {
             .locator('.oxd-input-group')
             .filter({ hasText: 'Employee Id' })
             .locator('input')
+
 
         // PIM page table element locators
         this.editIcon = page.locator('button:has(i.bi-pencil-fill)')
@@ -95,16 +103,38 @@ export class PIMPage {
 
     // Fill the employee personal information and submit the form to create the record.
     async addNewEmployee(firstName, middleName, lastName) {
+
         await this.firstName.fill(firstName)
         await this.middleName.fill(middleName)
         await this.lastName.fill(lastName)
 
         await this.saveButton.click()
 
+        // Wait for the duplicate Employee ID validation, if any
+        if (await this.employeeIdError.isVisible({ timeout: 3000 }).catch(() => false)) {
+            const uniqueEmployeeId = String(
+                Math.floor(100000 + Math.random() * 900000)
+            )
+
+            await this.employeeId.fill(uniqueEmployeeId)
+            await expect(this.employeeId).toHaveValue(uniqueEmployeeId)
+
+            await this.saveButton.click()
+        }
+
+
+        // Wait for Save operation to complete.
+        await expect(this.loadingSpinner).toBeHidden({ timeout: 30000 })
+
+        // Wait for the employee details page after save.
+        await expect(this.employeeFullName).toBeVisible({ timeout: 30000 })
+
+        // Confirm the saved employee details
         await expect(this.firstName).toHaveValue(firstName, { timeout: 30000 })
         await expect(this.middleName).toHaveValue(middleName, { timeout: 30000 })
         await expect(this.lastName).toHaveValue(lastName, { timeout: 30000 })
 
+        // OrangeHRM generates the Employee ID after saving
         await expect(this.employeeId).toHaveValue(/\S+/, { timeout: 30000 })
     }
 
@@ -154,22 +184,30 @@ export class PIMPage {
 
     // Search with the Employee Id after the employee information changes
     async searchEmployeeById(employeeId) {
-        await expect(this.searchEmployeeId).toBeVisible()
+        await expect(this.searchEmployeeId).toBeVisible({ timeout: 20000 })
 
         await this.searchEmployeeId.fill(employeeId)
         await expect(this.searchEmployeeId).toHaveValue(employeeId)
 
         await this.searchButton.click()
 
-        await expect(this.employeeRows).toHaveCount(1)
-        await expect(this.employeeRows.first()).toBeVisible()
+        const matchingEmployeeRow = this.employeeRows.filter({
+            has: this.page.locator('.oxd-table-cell', { hasText: employeeId })
+        })
+
+        await expect(matchingEmployeeRow).toHaveCount(1, { timeout: 30000 })
+        await expect(matchingEmployeeRow).toBeVisible()
 
     }
 
     // Match the visible employee row against the expected employee ID after employee info changes
     async findEmployeeById(employeeId) {
 
-        const row = this.employeeRows.first()
+        const row = this.employeeRows.filter({
+            has: this.page.locator('.oxd-table-cell', { hasText: employeeId })
+        })
+
+        await expect(row).toHaveCount(1, { timeout: 30000 })
 
         await expect(row.locator('.oxd-table-cell').nth(1)).toHaveText(employeeId)
 

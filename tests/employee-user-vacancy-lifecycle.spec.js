@@ -7,8 +7,7 @@ import { PIMPage } from '../pages/PIMPage'
 import { RecruitmentPage } from '../pages/RecruitmentPage'
 import { CandidatePage } from '../pages/CandidatePage'
 
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+const path = require('node:path')
 
 
 test('TC05 - Verify employee can be associated with a system user, vacancy, and candidate', async ({ page }) => {
@@ -52,9 +51,7 @@ test('TC05 - Verify employee can be associated with a system user, vacancy, and 
 
     const candidateEmail = `milo.qe.${Date.now().toString().slice(-4)}@gmail.com`
 
-    const currentFile = fileURLToPath(import.meta.url)
-    const currentDirectory = path.dirname(currentFile)
-    const resumePath = path.resolve(currentDirectory, '../fixtures/testResumeFile.txt')
+    const resumePath = path.resolve(process.cwd(), 'fixtures/testResumeFile.txt')
 
 
     // =========================

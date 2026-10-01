@@ -25,6 +25,7 @@ test('TC03 - Verify user can create, update and delete an employee', async ({ pa
     await loginPage.login('Admin', 'admin123')
 
     // Assert: confirm the user has reached the dashboard after login.
+    await expect(page).toHaveURL(/\/dashboard\/index/, { timeout: 30000 })
     await expect(dashboardPage.dashboardHeading).toBeVisible()
 
     // Act: navigate to the PIM module and open the add-employee form.

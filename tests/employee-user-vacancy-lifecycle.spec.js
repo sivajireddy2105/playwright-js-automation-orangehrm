@@ -63,6 +63,7 @@ test('TC05 - Verify employee can be associated with a system user, vacancy, and 
 
     await loginPage.login('Admin', 'admin123')
 
+    await expect(page).toHaveURL(/\/dashboard\/index/, { timeout: 30000 })
     await expect(dashboardPage.dashboardHeading).toBeVisible()
 
 

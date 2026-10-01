@@ -14,6 +14,7 @@ test('TC01 - Verify valid user can login, access Dashboard and logout', async ({
     await loginPage.login('Admin', 'admin123')
 
     // Assert: validate that the dashboard is visible after successful authentication.
+    await expect(page).toHaveURL(/\/dashboard\/index/, { timeout: 30000 })
     await expect(dashboardPage.dashboardHeading).toBeVisible()
 
     // Act: sign out through the user menu.

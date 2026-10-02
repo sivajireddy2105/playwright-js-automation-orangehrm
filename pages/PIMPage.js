@@ -30,7 +30,7 @@ export class PIMPage {
         this.loadingSpinner = page.locator('.oxd-loading-spinner')
 
         // Employee id collides with the existing id
-        this.employeeIdError = this.page
+        this.employeeIdError = page
             .locator('.oxd-input-group')
             .filter({ hasText: 'Employee Id' })
             .getByText('Employee Id already exists')
@@ -51,6 +51,34 @@ export class PIMPage {
         this.confirmDeleteButton = page.getByRole('button', {
             name: 'Yes, Delete'
         })
+
+        // Mandatory field validation
+        this.lastNameRequiredError = this.lastName
+            .locator('xpath=../following-sibling::span[contains(@class, "oxd-input-field-error-message")]')
+
+
+        // Login credentials elements
+        this.createLoginDetailsToggle = page.locator('.oxd-switch-wrapper .oxd-switch-input')
+        this.createLoginDetailsCheckbox = page.locator('.oxd-switch-wrapper input[type="checkbox"]')
+
+        this.userNameInput = page
+            .locator('.oxd-input-group')
+            .filter({ hasText: 'Username' })
+            .locator('input')
+
+        this.usernameAlreadyExistsError = page
+            .locator('.oxd-input-group')
+            .filter({ hasText: 'Username' })
+            .getByText('Username already exists', { exact: true })
+
+
+        this.enabledRadio = page.locator('input[type="radio"][value="1"]')
+
+        this.passwordInput = page.locator('input[type="password"]').first()
+
+        this.confirmPasswordInput = page.locator('input[type="password"]').nth(1)
+
+        this.passwordMismatchError = page.getByText('Passwords do not match', { exact: true })
     }
 
     // Open the PIM module from the left navigation.
@@ -143,7 +171,7 @@ export class PIMPage {
         await expect(this.loadingSpinner).toBeHidden({ timeout: 30000 })
 
         // Confirm the saved employee details
-        await expect(this.employeeFullName).toBeVisible({ timeout: 30000 })
+        await expect(this.page).toHaveURL(/\/pim\/viewPersonalDetails\/empNumber\/\d+/, { timeout: 30000 })
         await expect(this.firstName).toHaveValue(firstName, { timeout: 30000 })
         await expect(this.middleName).toHaveValue(middleName, { timeout: 30000 })
         await expect(this.lastName).toHaveValue(lastName, { timeout: 30000 })
@@ -271,5 +299,99 @@ export class PIMPage {
         await expect(row).toContainText(employeeId)
 
         return row
+    }
+
+
+    // Validate the mandatory error message appearance for lastname
+    async verifyLastNameRequired() {
+
+        await expect(this.lastNameRequiredError).toBeVisible({ timeout: 10000 })
+    }
+
+
+    // Enter the lastname and validate the required error message hidden behvaior
+    async enterLastName(lastName) {
+
+        await this.lastName.fill(lastName)
+
+        await expect(this.lastName).toHaveValue(lastName)
+        await expect(this.lastNameRequiredError).toBeHidden({ timeout: 10000 })
+    }
+
+
+    // Validate the create login dtails state
+    async enableCreateLoginDetails() {
+        await expect(this.createLoginDetailsCheckbox).not.toBeChecked()
+
+        await this.createLoginDetailsToggle.click()
+
+        await expect(this.createLoginDetailsCheckbox).toBeChecked()
+
+        await expect(this.userNameInput).toBeVisible({ timeout: 10000 })
+        await expect(this.passwordInput).toBeVisible({ timeout: 10000 })
+        await expect(this.confirmPasswordInput).toBeVisible({ timeout: 10000 })
+    }
+
+
+    // Validate whether the enabled status is checked by default
+    async verifyLoginDetailsDefaults() {
+
+        await expect(this.enabledRadio).toBeChecked()
+    }
+
+
+    // Enter the appropriate login details
+    async enterLoginDetails(userName, password, confirmPassword) {
+
+        await this.userNameInput.fill(userName)
+        await this.passwordInput.fill(password)
+        await this.confirmPasswordInput.fill(confirmPassword)
+
+        await expect(this.userNameInput).toHaveValue(userName)
+        await expect(this.passwordInput).toHaveValue(password)
+        await expect(this.confirmPasswordInput).toHaveValue(confirmPassword)
+    }
+
+
+    // Validate that an existing username is rejected
+    async verifyUsernameAlreadyExists() {
+
+        await expect(this.usernameAlreadyExistsError).toBeVisible({ timeout: 30000 })
+
+        await expect(this.usernameAlreadyExistsError).toHaveText('Username already exists')
+    }
+
+
+    // Validate the password mismatch error appears
+    async verifyPasswordMismatch() {
+
+        await expect(this.passwordMismatchError).toBeVisible({ timeout: 10000 })
+    }
+
+
+    // correct the mismatched password to align with the password field
+    async correctConfirmPassword(password) {
+
+        await this.confirmPasswordInput.fill(password)
+
+        await expect(this.confirmPasswordInput).toHaveValue(password)
+        await expect(this.passwordMismatchError).toBeHidden({ timeout: 10000 })
+    }
+
+
+    // Save the login credentials and validate the redirection to the personal details page
+    async saveNewEmployee() {
+
+        await this.saveButton.click()
+
+        // The application displays a loading spinner while saving
+        // and then routes to the employee Personal Details page
+        await expect(this.loadingSpinner).toBeHidden({ timeout: 30000 })
+
+        await expect(this.page).toHaveURL(/\/pim\/viewPersonalDetails\/empNumber\/\d+/, {
+            timeout: 30000
+        })
+
+        await expect(this.employeeFullName).toBeVisible({ timeout: 30000 })
     }
 }

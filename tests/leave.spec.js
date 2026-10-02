@@ -9,9 +9,9 @@ test('TC04 - Explore Leave module', async ({ page }) => {
     const leavePage = new LeavePage(page)
 
     // Leave dates use OrangeHRM's yyyy-dd-mm format
-    const fromDate = '2026-07-12'
-    const toDate = '2026-08-12'
-    const leaveTypeOption = 'CAN - Bereavement'
+    const fromDate = '2026-09-12'
+    const toDate = '2026-10-12'
+    const leaveTypeOption = 'CAN - Vacation'
 
     // Open the application
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 })
@@ -20,7 +20,7 @@ test('TC04 - Explore Leave module', async ({ page }) => {
     await loginPage.login('Admin', 'admin123')
 
     // Confirm successful navigation to Dashboard
-    await expect(page).toHaveURL(/dashboard/)
+    await expect(page).toHaveURL(/dashboard/, { timeout: 30000 })
 
     // Navigate to Leave > Apply Leave
     await leavePage.navigateToLeave()

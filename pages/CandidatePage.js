@@ -1,5 +1,4 @@
 import { expect } from "@playwright/test";
-import { stat } from "node:fs";
 
 export class CandidatePage {
 

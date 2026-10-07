@@ -71,7 +71,7 @@ test('TC12 - Run accessibility scan on System Users page', async ({ page }, test
     const dashboardPage = new DashboardPage(page)
     const userManagementPage = new UserManagementPage(page)
 
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 })
 
     await loginPage.login('Admin', 'admin123')
 
@@ -91,7 +91,7 @@ test('TC13 - Run accessibility scan on Add User page', async ({ page }, testInfo
     const dashboardPage = new DashboardPage(page)
     const userManagementPage = new UserManagementPage(page)
 
-    await page.goto('/')
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 })
 
     await loginPage.login('Admin', 'admin123')
 

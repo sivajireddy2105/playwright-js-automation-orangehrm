@@ -2,10 +2,19 @@ import fs from 'fs'
 import path from 'path'
 
 const summaryDirectory = 'reports/accessibility'
+
 const summaryFile = path.join(
     summaryDirectory,
     'accessibility-summary.json'
 )
+
+export function resetAccessibilitySummary() {
+    fs.mkdirSync(summaryDirectory, { recursive: true })
+
+    if (fs.existsSync(summaryFile)) {
+        fs.unlinkSync(summaryFile)
+    }
+}
 
 export function recordAccessibilitySummary(results, reportName) {
     fs.mkdirSync(summaryDirectory, { recursive: true })

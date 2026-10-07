@@ -22,12 +22,14 @@ export class PIMPage {
         this.employeeRows = this.employeeTable.locator('.oxd-table-body .oxd-table-card')
 
         // Add employee form locators used when creating a new record.
-        this.addEmployeeButton = page.locator('//button[@class="oxd-button oxd-button--medium oxd-button--secondary"]')
+        this.addEmployeeButton = page.locator(
+            '//button[@class="oxd-button oxd-button--medium oxd-button--secondary"]'
+        )
         this.firstName = page.getByPlaceholder('First Name')
         this.middleName = page.getByPlaceholder('Middle Name')
         this.lastName = page.getByPlaceholder('Last Name')
         this.saveButton = page.getByRole('button', { name: ' Save ', exact: true })
-        this.loadingSpinner = page.locator('.oxd-loading-spinner')
+        this.loadingSpinner = page.locator('.oxd-loading-spinner').first()
 
         // Employee id collides with the existing id
         this.employeeIdError = page
@@ -141,21 +143,48 @@ export class PIMPage {
 
     // Open the add employee form and wait for the first input field to be ready.
     async navigateToAddEmployee() {
+        await expect(this.addEmployeeButton).toBeVisible({
+            timeout: 30000
+        })
+
         await this.addEmployeeButton.click()
-        await expect(this.firstName).toBeVisible()
+
+        await expect(this.page).toHaveURL(
+            /\/pim\/addEmployee/,
+            { timeout: 30000 }
+        )
+
+        await expect(this.loadingSpinner).toBeHidden({
+            timeout: 30000
+        })
+
+        await expect(this.firstName).toBeVisible({
+            timeout: 30000
+        })
     }
 
     // Fill the employee personal information and submit the form to create the record.
     async addNewEmployee(firstName, middleName, lastName) {
-
         await this.firstName.fill(firstName)
         await this.middleName.fill(middleName)
         await this.lastName.fill(lastName)
 
         await this.saveButton.click()
 
-        // Wait for the duplicate Employee ID validation, if any
-        if (await this.employeeIdError.isVisible({ timeout: 3000 }).catch(() => false)) {
+        // Wait for either successful navigation or duplicate Employee ID validation
+        await Promise.race([
+            this.page.waitForURL(
+                /\/pim\/viewPersonalDetails\/empNumber\/\d+/,
+                { timeout: 30000 }
+            ),
+            this.employeeIdError.waitFor({
+                state: 'visible',
+                timeout: 30000
+            })
+        ])
+
+        // If Employee ID is already in use, replace it and save again
+        if (await this.employeeIdError.isVisible()) {
             const uniqueEmployeeId = String(
                 Math.floor(100000 + Math.random() * 900000)
             )
@@ -164,27 +193,22 @@ export class PIMPage {
             await expect(this.employeeId).toHaveValue(uniqueEmployeeId)
 
             await this.saveButton.click()
+
+            await expect(this.page).toHaveURL(
+                /\/pim\/viewPersonalDetails\/empNumber\/\d+/,
+                { timeout: 30000 }
+            )
         }
 
+        await expect(this.loadingSpinner).toBeHidden({
+            timeout: 30000
+        })
 
-        // Wait for Save operation to complete.
-        await expect(this.loadingSpinner).toBeHidden({ timeout: 30000 })
-
-        // Confirm the saved employee details
-        await expect(this.page).toHaveURL(/\/pim\/viewPersonalDetails\/empNumber\/\d+/, { timeout: 30000 })
-        await expect(this.firstName).toHaveValue(firstName, { timeout: 30000 })
-        await expect(this.middleName).toHaveValue(middleName, { timeout: 30000 })
-        await expect(this.lastName).toHaveValue(lastName, { timeout: 30000 })
-
-        // OrangeHRM generates the Employee ID after saving
-        await expect(this.employeeId).toHaveValue(/\S+/, { timeout: 30000 })
-    }
-
-    // Retrieve the employee ID assigned by the system after saving the form.
-    async getEmployeeId() {
+        await expect(this.firstName).toHaveValue(firstName)
+        await expect(this.middleName).toHaveValue(middleName)
+        await expect(this.lastName).toHaveValue(lastName)
 
         await expect(this.employeeId).toHaveValue(/\S+/)
-        return await this.employeeId.inputValue()
     }
 
 
@@ -381,17 +405,52 @@ export class PIMPage {
 
     // Save the login credentials and validate the redirection to the personal details page
     async saveNewEmployee() {
-
         await this.saveButton.click()
 
-        // The application displays a loading spinner while saving
-        // and then routes to the employee Personal Details page
-        await expect(this.loadingSpinner).toBeHidden({ timeout: 30000 })
+        const duplicateEmployeeId = await this.employeeIdError
+            .waitFor({
+                state: 'visible',
+                timeout: 5000
+            })
+            .then(() => true)
+            .catch(() => false)
 
-        await expect(this.page).toHaveURL(/\/pim\/viewPersonalDetails\/empNumber\/\d+/, {
+        if (duplicateEmployeeId) {
+            const uniqueEmployeeId = String(
+                Math.floor(100000 + Math.random() * 900000)
+            )
+
+            await this.employeeId.fill(uniqueEmployeeId)
+
+            await expect(this.employeeId).toHaveValue(uniqueEmployeeId)
+
+            await this.saveButton.click()
+        }
+
+        await expect(this.page).toHaveURL(
+            /\/pim\/viewPersonalDetails\/empNumber\/\d+/,
+            { timeout: 30000 }
+        )
+
+        await expect(this.loadingSpinner).toBeHidden({
             timeout: 30000
         })
 
-        await expect(this.employeeFullName).toBeVisible({ timeout: 30000 })
+        await expect(this.firstName).toBeVisible({
+            timeout: 30000
+        })
+
+        await expect(this.lastName).toBeVisible({
+            timeout: 30000
+        })
+    }
+
+
+    async getEmployeeId() {
+        await expect(this.employeeId).toHaveValue(/\S+/, {
+            timeout: 30000
+        })
+
+        return await this.employeeId.inputValue()
     }
 }

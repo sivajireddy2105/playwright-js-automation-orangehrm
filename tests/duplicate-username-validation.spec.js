@@ -65,5 +65,6 @@ test('TC08 - Verify duplicate username is rejected during employee account creat
     // Verify that OrangeHRM rejects the duplicate username
     await pimPage.verifyUsernameAlreadyExists()
 
+    // Submit the form to trigger duplicate username validation
     await pimPage.saveButton.click()
 })

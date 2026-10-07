@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "playwright test --workers=1",
+    "test:accessibility": "playwright test tests/accessibility.spec.js",
+    "validate:accessibility": "node utils/validateAccessibility.js"
+  },
   "keywords": [],
   "type": "commonjs",
   "devDependencies": {

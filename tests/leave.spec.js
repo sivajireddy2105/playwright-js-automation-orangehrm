@@ -11,7 +11,7 @@ test('TC04 - Explore Leave module', async ({ page }) => {
     // Leave dates use OrangeHRM's yyyy-dd-mm format
     const fromDate = '2026-09-12'
     const toDate = '2026-10-12'
-    const leaveTypeOption = 'CAN - Vacation'
+    const leaveTypeOption = 'CAN - Personal'
 
     // Open the application
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30000 })

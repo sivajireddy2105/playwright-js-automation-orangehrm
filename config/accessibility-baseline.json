@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "results": [
+    {
+      "testCase": "TC09",
+      "browser": "chromium",
+      "violations": 6
+    },
+    {
+      "testCase": "TC09",
+      "browser": "webkit",
+      "violations": 6
+    },
+    {
+      "testCase": "TC09",
+      "browser": "firefox",
+      "violations": 6
+    },
+    {
+      "testCase": "TC10",
+      "browser": "chromium",
+      "violations": 3
+    },
+    {
+      "testCase": "TC10",
+      "browser": "webkit",
+      "violations": 3
+    },
+    {
+      "testCase": "TC10",
+      "browser": "firefox",
+      "violations": 3
+    },
+    {
+      "testCase": "TC11",
+      "browser": "webkit",
+      "violations": 10
+    },
+    {
+      "testCase": "TC11",
+      "browser": "chromium",
+      "violations": 10
+    },
+    {
+      "testCase": "TC11",
+      "browser": "firefox",
+      "violations": 10
+    },
+    {
+      "testCase": "TC12",
+      "browser": "webkit",
+      "violations": 10
+    },
+    {
+      "testCase": "TC12",
+      "browser": "chromium",
+      "violations": 10
+    },
+    {
+      "testCase": "TC13",
+      "browser": "webkit",
+      "violations": 10
+    },
+    {
+      "testCase": "TC12",
+      "browser": "firefox",
+      "violations": 11
+    },
+    {
+      "testCase": "TC13",
+      "browser": "chromium",
+      "violations": 10
+    },
+    {
+      "testCase": "TC13",
+      "browser": "firefox",
+      "violations": 10
+    }
+  ]
+}

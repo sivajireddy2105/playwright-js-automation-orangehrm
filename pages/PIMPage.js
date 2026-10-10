@@ -30,6 +30,8 @@ export class PIMPage {
         this.lastName = page.getByPlaceholder('Last Name')
         this.saveButton = page.getByRole('button', { name: ' Save ', exact: true })
         this.loadingSpinner = page.locator('.oxd-loading-spinner').first()
+        this.formLoader = page.locator('.oxd-form-loader')
+
 
         // Employee id collides with the existing id
         this.employeeIdError = page
@@ -103,13 +105,9 @@ export class PIMPage {
             { timeout: 30000 }
         )
 
-        await expect(this.loadingSpinner).toBeHidden({
-            timeout: 30000
-        })
+        await this.waitForEmployeeFormReady()
 
-        // Wait for the employee details page to load
-        await expect(this.firstName).toBeVisible({ timeout: 20000 })
-        await expect(this.lastName).toBeVisible({ timeout: 20000 })
+        await expect(this.lastName).toBeVisible({ timeout: 30000 })
     }
 
 
@@ -129,7 +127,9 @@ export class PIMPage {
 
     // Search for an employee by ID and verify that no matching record exists.
     async verifyEmployeeDeleted(employeeId) {
-        await expect(this.searchEmployeeId).toBeVisible({ timeout: 20000 })
+        await expect(this.searchEmployeeId).toBeVisible({
+            timeout: 30000
+        })
 
         await this.searchEmployeeId.fill(employeeId)
 
@@ -137,7 +137,11 @@ export class PIMPage {
 
         await this.searchButton.click()
 
-        await expect(this.employeeRows).toHaveCount(0)
+        const deletedEmployeeRow = this.getEmployeeRowById(employeeId)
+
+        await expect(deletedEmployeeRow).toHaveCount(0, {
+            timeout: 30000
+        })
     }
 
 
@@ -171,49 +175,54 @@ export class PIMPage {
 
         await this.saveButton.click()
 
-        // Wait for either successful navigation or duplicate Employee ID validation
-        await Promise.race([
-            this.page.waitForURL(
-                /\/pim\/viewPersonalDetails\/empNumber\/\d+/,
-                { timeout: 30000 }
-            ),
-            this.employeeIdError.waitFor({
+        const duplicateEmployeeId = await this.employeeIdError
+            .waitFor({
                 state: 'visible',
-                timeout: 30000
+                timeout: 5000
             })
-        ])
+            .then(() => true)
+            .catch(() => false)
 
-        // If Employee ID is already in use, replace it and save again
-        if (await this.employeeIdError.isVisible()) {
+        if (duplicateEmployeeId) {
             const uniqueEmployeeId = String(
                 Math.floor(100000 + Math.random() * 900000)
             )
 
             await this.employeeId.fill(uniqueEmployeeId)
+
             await expect(this.employeeId).toHaveValue(uniqueEmployeeId)
 
             await this.saveButton.click()
-
-            await expect(this.page).toHaveURL(
-                /\/pim\/viewPersonalDetails\/empNumber\/\d+/,
-                { timeout: 30000 }
-            )
         }
 
-        await expect(this.loadingSpinner).toBeHidden({
+        await expect(this.page).toHaveURL(
+            /\/pim\/viewPersonalDetails\/empNumber\/\d+/,
+            { timeout: 30000 }
+        )
+
+        await expect(this.firstName).toBeVisible({
+            timeout: 30000
+        })
+
+        await expect(this.lastName).toBeVisible({
+            timeout: 30000
+        })
+
+        await expect(this.employeeId).toHaveValue(/\S+/, {
             timeout: 30000
         })
 
         await expect(this.firstName).toHaveValue(firstName)
         await expect(this.middleName).toHaveValue(middleName)
         await expect(this.lastName).toHaveValue(lastName)
-
-        await expect(this.employeeId).toHaveValue(/\S+/)
     }
 
 
     // Update any combination of employee name fields provided by the test.
     async updateEmployeeDetails({ firstName, middleName, lastName } = {}) {
+
+        await this.waitForEmployeeFormReady()
+
         if (firstName != undefined) {
             await this.firstName.click()
             await this.firstName.press('Control+A')
@@ -251,7 +260,7 @@ export class PIMPage {
 
         await this.saveButton.first().click()
 
-        await expect(this.loadingSpinner).toBeHidden({
+        await expect(this.formLoader).toBeHidden({
             timeout: 30000
         })
 
@@ -268,59 +277,74 @@ export class PIMPage {
         })
     }
 
+
     // Return to the employee list page so the newly created person can be searched and validated.
     async navigateToEmployeeList() {
         await this.employeeListLink.click()
 
-        await expect(this.page).toHaveURL(/\/pim\/viewEmployeeList/, { timeout: 30000 })
+        await expect(this.page).toHaveURL(
+            /\/pim\/viewEmployeeList/,
+            { timeout: 30000 }
+        )
 
-        await expect(this.loadingSpinner).toBeHidden({ timeout: 30000 })
+        await expect(this.searchEmployeeId).toBeVisible({
+            timeout: 30000
+        })
 
-        // Wait for the PIM page and its employee-search controls
-        // to actually become available.
-        await expect(this.searchEmployeeId).toBeVisible({ timeout: 30000 })
-
-        await expect(this.employeeTable).toBeVisible({ timeout: 30000 })
+        await expect(this.employeeTable).toBeVisible({
+            timeout: 30000
+        })
     }
+
 
     // Search with the Employee Id after the employee information changes
     async searchEmployeeById(employeeId) {
-        await expect(this.searchEmployeeId).toBeVisible({ timeout: 30000 })
+        await expect(this.searchEmployeeId).toBeVisible({
+            timeout: 30000
+        })
 
         await this.searchEmployeeId.fill(employeeId)
+
         await expect(this.searchEmployeeId).toHaveValue(employeeId)
 
         await this.searchButton.click()
 
-        await expect(this.loadingSpinner).toBeHidden({
-            timeout: 30000
-        })
-
-        const matchingEmployeeRow = this.employeeRows.filter({
-            has: this.page.locator('.oxd-table-cell').filter({
-                hasText: employeeId
-            })
-        })
+        const matchingEmployeeRow =
+            this.getEmployeeRowById(employeeId)
 
         await expect(matchingEmployeeRow).toHaveCount(1, {
             timeout: 30000
         })
 
-        await expect(matchingEmployeeRow).toContainText(employeeId)
+        await expect(matchingEmployeeRow).toBeVisible({
+            timeout: 30000
+        })
 
         return matchingEmployeeRow
     }
 
+
+    getEmployeeRowById(employeeId) {
+        return this.employeeRows.filter({
+            has: this.page.locator(
+                '.oxd-table-cell:nth-child(2)',
+                { hasText: employeeId }
+            )
+        })
+    }
+
+
     // Match the visible employee row against the expected employee ID after employee info changes
     async findEmployeeById(employeeId) {
+        const row = this.getEmployeeRowById(employeeId)
 
-        const row = this.employeeRows.filter({
-            has: this.page.locator('.oxd-table-cell', { hasText: employeeId })
+        await expect(row).toHaveCount(1, {
+            timeout: 30000
         })
 
-        await expect(row).toHaveCount(1, { timeout: 30000 })
-
-        await expect(row).toContainText(employeeId)
+        await expect(row).toBeVisible({
+            timeout: 30000
+        })
 
         return row
     }
@@ -452,5 +476,25 @@ export class PIMPage {
         })
 
         return await this.employeeId.inputValue()
+    }
+
+
+    async waitForEmployeeFormReady() {
+        await expect(this.formLoader).toBeHidden({
+            timeout: 30000
+        })
+
+        await expect(this.firstName).toBeVisible({
+            timeout: 30000
+        })
+
+        await expect(this.firstName).toBeEditable({
+            timeout: 30000
+        })
+
+        await this.firstName.click({
+            trial: true,
+            timeout: 30000
+        })
     }
 }

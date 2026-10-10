@@ -49,12 +49,11 @@ test('TC03 - Verify user can create, update and delete an employee', async ({ pa
 
 
     // Search for the newly created employee using the generated Employee ID
-    await pimPage.searchEmployeeById(generatedEmployeeId)
+    // await pimPage.searchEmployeeById(generatedEmployeeId)
 
     // Assert: confirm the created employee is present using the generated Employee ID.
-    const newlyAddedEmployeeRow = await pimPage.findEmployeeById(generatedEmployeeId)
+    const newlyAddedEmployeeRow = await pimPage.searchEmployeeById(generatedEmployeeId)
 
-    expect(newlyAddedEmployeeRow).not.toBeNull()
     await expect(newlyAddedEmployeeRow).toBeVisible()
 
     // Open the created employee's details page for editing.

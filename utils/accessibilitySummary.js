@@ -1,3 +1,4 @@
+
 import fs from 'fs'
 import path from 'path'
 
@@ -8,11 +9,18 @@ const summaryFile = path.join(
     'accessibility-summary.json'
 )
 
+const findingsFile = path.join(
+    summaryDirectory,
+    'accessibility-findings.json'
+)
+
 export function resetAccessibilitySummary() {
     fs.mkdirSync(summaryDirectory, { recursive: true })
 
-    if (fs.existsSync(summaryFile)) {
-        fs.unlinkSync(summaryFile)
+    for (const file of [summaryFile, findingsFile]) {
+        if (fs.existsSync(file)) {
+            fs.unlinkSync(file)
+        }
     }
 }
 
@@ -33,7 +41,17 @@ export function recordAccessibilitySummary(results, reportName) {
         )
     }
 
-    const violations = results.violations?.length ?? 0
+    let findings = {
+        scans: []
+    }
+
+    if (fs.existsSync(findingsFile)) {
+        findings = JSON.parse(
+            fs.readFileSync(findingsFile, 'utf-8')
+        )
+    }
+
+    const violations = results.violations ?? []
     const passes = results.passes?.length ?? 0
     const incomplete = results.incomplete?.length ?? 0
 
@@ -45,20 +63,44 @@ export function recordAccessibilitySummary(results, reportName) {
     const testCase = reportName.match(/TC\d+/)?.[0] ?? 'Unknown'
 
     summary.totalScans += 1
-    summary.totalViolations += violations
+    summary.totalViolations += violations.length
     summary.totalPasses += passes
     summary.totalIncomplete += incomplete
 
     summary.results.push({
         testCase,
         browser,
-        violations,
+        violations: violations.length,
         passes,
         incomplete
+    })
+
+    findings.scans.push({
+        testCase,
+        browser,
+        reportName,
+        violations: violations.map(violation => ({
+            id: violation.id,
+            impact: violation.impact,
+            description: violation.description,
+            help: violation.help,
+            helpUrl: violation.helpUrl,
+
+            affectedElements: violation.nodes.map(node => ({
+                target: node.target,
+                html: node.html,
+                failureSummary: node.failureSummary
+            }))
+        }))
     })
 
     fs.writeFileSync(
         summaryFile,
         JSON.stringify(summary, null, 2)
+    )
+
+    fs.writeFileSync(
+        findingsFile,
+        JSON.stringify(findings, null, 2)
     )
 }
